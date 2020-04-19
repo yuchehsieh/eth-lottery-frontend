@@ -9,10 +9,12 @@ class App extends Component {
     constructor(props) {
       super(props);
 
+      this.onSubmit = this.onSubmit.bind(this);
       this.state = {
         manager: '',
         players: [],
         contractBalance: '', /** balance is the big-number, initialize with empty string **/
+        value: ''
       }
     }
 
@@ -26,9 +28,21 @@ class App extends Component {
       const players = await lottery.methods.getPlayers().call();
       const contractBalance = await web3.eth.getBalance(lottery.options.address);
 
-      console.log(players, contractBalance);
+      const managerBalance = await web3.eth.getBalance(manager);
+      console.log(web3.utils.fromWei(managerBalance, 'ether'));
 
       this.setState({ manager, players, contractBalance });
+    }
+
+    async onSubmit(e) {
+        e.preventDefault();
+
+        /** send methods have to manually specify the "from" property **/
+        const accounts = await web3.eth.getAccounts();
+        await lottery.methods.enter().send({
+          from: accounts[0], // assume that first account is the one going send the transaction
+          value: web3.toWei(this.state.value, 'ether')
+        })
     }
 
     render() {
@@ -40,6 +54,18 @@ class App extends Component {
                 There are currently {this.state.players.length} people entered,<br/>
                 competing to win {web3.utils.fromWei(this.state.contractBalance, 'ether')} ether!
               </p>
+
+              <hr/>
+
+              <form onSubmit={this.onSubmit}>
+                <h4>Want to try your luck ?</h4>
+                <div>
+                  <label>Amount of ether to enter</label>
+                  <input  value={this.state.value} onChange={e => this.setState({ value: e.target.value })}/>
+                </div>
+                <button>Enter</button>
+              </form>
+
             </div>
         );
     }
