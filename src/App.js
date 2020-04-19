@@ -10,6 +10,7 @@ class App extends Component {
       super(props);
 
       this.onSubmit = this.onSubmit.bind(this);
+      this.onPickWinnerClick = this.onPickWinnerClick.bind(this);
       this.state = {
         manager: '',
         players: [],
@@ -47,9 +48,17 @@ class App extends Component {
           from: accounts[0], // assume that first account is the one going send the transaction
           value: web3.utils.toWei(this.state.value, 'ether')
         });
-
         this.setState({ message: 'You have been entered!' });
+    }
 
+    async onPickWinnerClick() {
+      const accounts = await web3.eth.getAccounts();
+
+      this.setState({ message: 'Waiting on transaction success...' });
+
+      await lottery.methods.pickWinner().send({from: accounts[0]});
+
+      this.setState({ message: 'A winner has been picked!' });
     }
 
     render() {
@@ -72,6 +81,11 @@ class App extends Component {
                 </div>
                 <button>Enter</button>
               </form>
+
+              <hr/>
+
+              <h4>ready to pick a winner ?</h4>
+              <button onClick={this.onPickWinnerClick}>Pick a winner</button>
 
               <hr/>
 
