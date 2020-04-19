@@ -14,7 +14,8 @@ class App extends Component {
         manager: '',
         players: [],
         contractBalance: '', /** balance is the big-number, initialize with empty string **/
-        value: ''
+        value: '',
+        message: '',
       }
     }
 
@@ -39,10 +40,16 @@ class App extends Component {
 
         /** send methods have to manually specify the "from" property **/
         const accounts = await web3.eth.getAccounts();
+
+        this.setState({ message: 'Waiting on transaction success...' });
+
         await lottery.methods.enter().send({
           from: accounts[0], // assume that first account is the one going send the transaction
-          value: web3.toWei(this.state.value, 'ether')
-        })
+          value: web3.utils.toWei(this.state.value, 'ether')
+        });
+
+        this.setState({ message: 'You have been entered!' });
+
     }
 
     render() {
@@ -65,6 +72,10 @@ class App extends Component {
                 </div>
                 <button>Enter</button>
               </form>
+
+              <hr/>
+
+              <h1>{this.state.message}</h1>
 
             </div>
         );
